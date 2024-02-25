@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DS Bootcamp 2024 - 9&nbsp; Page Ranker 예제</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./ds-camp09(a).html" rel="next">
+<link href="./ds-camp07.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./ds-camp08.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Page Ranker 예제</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">DS Bootcamp 2024</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">DS Bootcamp 2024, 파이썬 특강</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp01.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">개발 환경 구성 및 실습</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp02.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">제어문과 정렬 알고리즘</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp03.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">함수와 정렬 알고리즘</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp04.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">리스트(list), 파일 입출력 그리고 CSV</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp05.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">클래스, 객체를 사용한 CSV 구조화</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp06.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Python 문법 연습 심화(함수 기반)</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp07.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Python 문법 연습 심화(토이 프로그램)</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp08.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Page Ranker 예제</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp09(a).html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">사교육비 증가에 따른 상관관계 파악</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp09(b).html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">경기별 기록 EDA</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ds-camp10.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">‘한국복지패널 데이터’ 톺아보기</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#pure-python을-활용한-page-ranker-알고리즘-구현" id="toc-pure-python을-활용한-page-ranker-알고리즘-구현" class="nav-link active" data-scroll-target="#pure-python을-활용한-page-ranker-알고리즘-구현"><span class="header-section-number">9.1</span> Pure Python을 활용한 Page Ranker 알고리즘 구현</a></li>
+  <li><a href="#고유값-고유벡터를-활용한-page-ranker-알고리즘-구현" id="toc-고유값-고유벡터를-활용한-page-ranker-알고리즘-구현" class="nav-link" data-scroll-target="#고유값-고유벡터를-활용한-page-ranker-알고리즘-구현"><span class="header-section-number">9.2</span> 고유값, 고유벡터를 활용한 Page Ranker 알고리즘 구현</a></li>
+  <li><a href="#응용" id="toc-응용" class="nav-link" data-scroll-target="#응용"><span class="header-section-number">9.3</span> 응용</a>
+  <ul class="collapse">
+  <li><a href="#concept" id="toc-concept" class="nav-link" data-scroll-target="#concept"><span class="header-section-number">9.3.1</span> Concept</a></li>
+  <li><a href="#formular" id="toc-formular" class="nav-link" data-scroll-target="#formular"><span class="header-section-number">9.3.2</span> Formular</a></li>
+  <li><a href="#steady-state-and-dangling-nodes" id="toc-steady-state-and-dangling-nodes" class="nav-link" data-scroll-target="#steady-state-and-dangling-nodes"><span class="header-section-number">9.3.3</span> Steady state and Dangling nodes</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Page Ranker 예제</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<blockquote class="blockquote">
+<p>데이터셋은 “https://github.com/lovit/kmrd”에서 다운로드 받을 수 있습니다.</p>
+</blockquote>
+<section id="pure-python을-활용한-page-ranker-알고리즘-구현" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="pure-python을-활용한-page-ranker-알고리즘-구현"><span class="header-section-number">9.1</span> Pure Python을 활용한 Page Ranker 알고리즘 구현</h2>
+<div id="cell-2" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-3" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>myWeb <span class="op">=</span> nx.DiGraph()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>myPages <span class="op">=</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-4" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>connections <span class="op">=</span> [(<span class="dv">1</span>, <span class="dv">3</span>), (<span class="dv">2</span>, <span class="dv">1</span>), (<span class="dv">2</span>, <span class="dv">3</span>), (<span class="dv">3</span>, <span class="dv">1</span>), (<span class="dv">3</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">4</span>, <span class="dv">5</span>), (<span class="dv">5</span>, <span class="dv">1</span>), (<span class="dv">5</span>, <span class="dv">4</span>)]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>myWeb.add_nodes_from(myPages)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>myWeb.add_edges_from(connections)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-5" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pos <span class="op">=</span> nx.shell_layout(myWeb)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>nx.draw(myWeb, pos, arrows<span class="op">=</span><span class="va">True</span>, with_labels<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-6" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> createPageRank(aGraph):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    nodes_set <span class="op">=</span> <span class="bu">len</span>(aGraph)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> nx.to_numpy_array(aGraph)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    outwards <span class="op">=</span> np.squeeze(np.asarray(np.<span class="bu">sum</span>(M, axis<span class="op">=</span><span class="dv">1</span>)))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    prob_outwards <span class="op">=</span> np.array([<span class="fl">1.0</span><span class="op">/</span>count <span class="cf">if</span> count <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="fl">0.0</span> <span class="cf">for</span> count <span class="kw">in</span> outwards])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    G <span class="op">=</span> np.asarray(np.multiply(M.T, prob_outwards))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> np.ones(nodes_set) <span class="op">/</span> <span class="bu">float</span>(nodes_set)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> np.<span class="bu">min</span>(np.<span class="bu">sum</span>(G, axis<span class="op">=</span><span class="dv">0</span>)) <span class="op">&lt;</span> <span class="fl">1.0</span>:</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">'경고: 전이 확률 합의 최솟값이 1보다 작습니다.'</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> G, p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-7" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>G, p <span class="op">=</span> createPageRank(myWeb)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(G)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="고유값-고유벡터를-활용한-page-ranker-알고리즘-구현" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="고유값-고유벡터를-활용한-page-ranker-알고리즘-구현"><span class="header-section-number">9.2</span> 고유값, 고유벡터를 활용한 Page Ranker 알고리즘 구현</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/008.png" class="img-fluid figure-img"></p>
+<figcaption>Page Ranker</figcaption>
+</figure>
+</div>
+<p>마이크로 인터넷에 다음과 같이 4개의 페이지 A, B, C, D가 있다고 가정해 보겠습니다.: <code>A↔︎B, A→C, A→D, B↔︎D, C↔︎D</code> * 표기법은 아래와 같음 * ↔︎ 양방향 참조 * → 단방향 참조 * 모든 페이지의 클릭된 확률을 동일</p>
+<ul>
+<li><span class="math inline">\((p(A \rightarrow B) = p(A \rightarrow C) = p(A \rightarrow D) = \frac{1}{3})\)</span></li>
+<li><span class="math inline">\((p(B \rightarrow A) = p(B \rightarrow D) = \frac{1}{2})\)</span></li>
+<li><span class="math inline">\((p(C \rightarrow D) = 1)\)</span></li>
+<li><span class="math inline">\((p(D \rightarrow B) = p(D \rightarrow C) = \frac{1}{2})\)</span></li>
+</ul>
+<p>관계를 기반으로 확률 행렬(P)을 만들어 보면 아래와 같음</p>
+<p><span class="math display">\[
+P = \begin{bmatrix}
+p(A \rightarrow A) &amp; p(A \rightarrow B) &amp; p(A \rightarrow C) &amp; p(A \rightarrow D) \\
+p(B \rightarrow A) &amp; p(B \rightarrow B) &amp; p(B \rightarrow C) &amp; p(B \rightarrow D) \\
+p(C \rightarrow A) &amp; p(C \rightarrow B) &amp; p(C \rightarrow C) &amp; p(C \rightarrow D) \\
+p(D \rightarrow A) &amp; p(D \rightarrow B) &amp; p(D \rightarrow C) &amp; p(D \rightarrow D)
+\end{bmatrix}
+\]</span></p>
+<p><span class="math display">\[
+P = \begin{bmatrix}
+0 &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} \\
+\frac{1}{2} &amp; 0 &amp; 0 &amp; \frac{1}{2} \\
+0 &amp; 0 &amp; 0 &amp; 1 \\
+0 &amp; \frac{1}{2} &amp; \frac{1}{2} &amp; 0
+\end{bmatrix}
+\]</span></p>
+<div id="cell-11" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>P <span class="op">=</span> np.array([</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">3</span>], </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1</span><span class="op">/</span><span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>], </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>], </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>, <span class="dv">1</span><span class="op">/</span><span class="dv">2</span>, <span class="dv">0</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">sum</span>(P, axis<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>몇가지 가정과 관찰
+<ul>
+<li>특정 시점에 페이지를 방문하는 개인 수가 <span class="math inline">\(n\)</span>명이고 이들은 매분마다 새로운 페이지로 이동</li>
+<li>한 개인이 페이지를 떠날 때마다 다른 개인이 소스 페이지에서 참조된 링크를 클릭하여 같은 페이지로 들감</li>
+<li>장기적으로 가장 많은 링크가 연결된 페이지의 방문자 수가 최대</li>
+<li>PageRank는 프로세스 종료 시점의 총 방문자 수로 웹사이트의 순위를 나타내는 값 <span class="math display">\[r=(rArBrCrD)\]</span></li>
+</ul></li>
+</ul>
+<p>그런 다음 각 웹사이트의 <span class="math inline">\(i + 1\)</span> 분까지 사용자 수는 <span class="math inline">\(i\)</span> 번째 분의 사용자 수와 관련이 있습니다. <span class="math display">\[r^{(i+1)}=Lr^{(i)} \text{ where } L = P^T \\
+\text{ Long time behavior of this system is when } r^{(i+1)} = r^{(i)} \\
+\text{ then } Lr = r
+\]</span></p>
+<div id="cell-13" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>eigen_vals, eigen_vecs <span class="op">=</span> np.linalg.eig(P.T)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>order_eigen_values <span class="op">=</span> np.absolute(eigen_vals).argsort()[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>eigen_vals <span class="op">=</span> eigen_vals[order_eigen_values]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>eigen_vecs <span class="op">=</span> eigen_vecs[:, order_eigen_values]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-14" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> eigen_vecs[:, <span class="dv">0</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>r</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-15" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>visits <span class="op">=</span> <span class="dv">100</span> <span class="op">*</span> np.real(r <span class="op">/</span> np.<span class="bu">sum</span>(r))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>visits</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><span class="math display">\[r=(rA=12 visitsr, rB=24 visitsr, rC=24visitsr, rD=40visits)\]</span></p>
+</section>
+<section id="응용" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="응용"><span class="header-section-number">9.3</span> 응용</h2>
+<section id="concept" class="level3" data-number="9.3.1">
+<h3 data-number="9.3.1" class="anchored" data-anchor-id="concept"><span class="header-section-number">9.3.1</span> Concept</h3>
+<p><code>페이지랭크(PageRank)</code> 는 가장 대표적인 <code>graph ranking</code> 알고리즘입니다. PageRank는 월드 와이드 웹과 같은 하이퍼링크 구조를 가지는 문서에 상대적 중요도에 따라 가중치를 부여하는 방법으로, 웹사이트 페이지의 중요도를 측정하기 위해 구글 검색에 쓰이는 알고리즘이다. 이 알고리즘은 서로간에 인용과 참조로 연결된 임의의 묶음에 적용할 수 있다.</p>
+<p>페이지랭크는 스탠퍼드 대학교에 재학 중이던 래리 페이지와 세르게이 브린이 새로운 검색 엔진에 대한 연구 기획의 일부로 개발한 것이다. 이 기획은 1995년 시작되어, 1998년 구글이라 불리는 시범 서비스로 발전하였다. 페이지와 브린은 페이지랭크에 기반한 검색 기술을 바탕으로 구글 사를 설립하였다.</p>
+</section>
+<section id="formular" class="level3" data-number="9.3.2">
+<h3 data-number="9.3.2" class="anchored" data-anchor-id="formular"><span class="header-section-number">9.3.2</span> Formular</h3>
+<p>PageRank 에서 각 node 의 중요도 <span class="math inline">\(PR(u)\)</span> 는 다음처럼 계산됩니다. <span class="math inline">\(B_u\)</span>는 page <span class="math inline">\(u\)</span> 의 backlinks 의 출발점 마디입니다. <span class="math inline">\(v\)</span> 에서 <span class="math inline">\(u\)</span> 로 web page 의 hyperlink 가 있습니다. 각 page <span class="math inline">\(v\)</span> 는 자신의 점수를 자신이 가진 links 의 개수만큼으로 나눠서 각각의 <span class="math inline">\(u\)</span> 에게 전달합니다. <span class="math inline">\(u\)</span> 는 <span class="math inline">\(v\)</span> 로부터 받은 점수의 합에 상수 <span class="math inline">\(c\)</span> 를 곱합니다. 그리로 전체 마디의 개수 <span class="math inline">\(N\)</span> 의 역수인 <span class="math inline">\(\frac{1}{N}\)</span> 의 <span class="math inline">\((1 - c)\)</span> 배 만큼을 더합니다. <span class="math inline">\(c\)</span> 는 <span class="math inline">\([0, 1]\)</span> 사이의 상수입니다. 논문에서는 0.85 를 이용하였습니다.</p>
+<p><span class="math display">\[PR(u) = c \times \sum_{v \in B_u} \frac{PR(v)}{N_v} + (1 - c) \times \frac{1}{N}\]</span></p>
+<blockquote class="blockquote">
+<p>Academic citation literature has been applied to the web, largely by counting citations or backlinks to a given page. This gives some approximation of a page’s importance or quality. PageRank extends this idea by not counting links from all pages equally, and by normalizing by the number of links on a page.</p>
+</blockquote>
+</section>
+<section id="steady-state-and-dangling-nodes" class="level3" data-number="9.3.3">
+<h3 data-number="9.3.3" class="anchored" data-anchor-id="steady-state-and-dangling-nodes"><span class="header-section-number">9.3.3</span> Steady state and Dangling nodes</h3>
+<p>Citations 만을 생각하면 아래의 식만으로도 충분합니다. 그러나 그래프가 cyclic 이지 않으면 제대로된 계산을 할 수 없습니다. Cyclic network (graph) 란 한 마디에서 출발하여 다른 마디를 거쳐 다시 출발한 마디로 돌아올 수 있는 길이 있는 네트워크입니다. Web page hyperlinks 에서는 한 page 에서 출발하여 hyperlinks 를 누르다보면 자신의 page 로 돌아올 수 있다는 의미입니다.</p>
+<p><span class="math display">\[PR(u) = \sum_{v \in B_u} \frac{PR(v)}{N_v}\]</span></p>
+<p>PageRank 는 <code>개미의 이동 모델</code>로 설명하기도 합니다. N 개의 마디가 존재하는 graph 에 각 마디마다 공평하게 <span class="math inline">\(\frac{1}{N}\)</span> 마리의 개미를 올려둡니다. 한 스텝마다 모든 마디의 개미들은 links 를 따라 연결된 다른 마디로 이동합니다. 한 마디의 links 가 두 개 이상이라면 개미들은 공평히 나눠져서 링크를 따라 이동합니다. 이 부분이 위 식의 <span class="math inline">\(\frac{PR(v)}{N_v}\)</span> 입니다. Backlinks 가 많은 마디에는 많은 개미가 모입니다. 이 과정을 한 번이 아닌 여러 번 수행합니다.</p>
+<p>이러한 과정을 확률 분야에서는 <code>Markov model</code> 이라 합니다. 확률 모형을 이용하여 매 스텝마다 변하는 시스템을 표현합니다. 개미가 이동하는 비율은 Markov model 의 transition matrix 에 해당합니다. 그리고 Markov model 에서는 이런 과정을 여러 번 반복하면 각 마디에 존재하는 개미의 숫자가 변하지 않는 시점 (steady state) 이 생깁니다. 대략 반복횟수 50 번 정도면 충분합니다.</p>
+<p>그러나 어떤 마디는 backlinks 만 있고 다른 마디로 연결되는 links 가 없을 수도 있습니다(dangling node). 이 경우에 개미는 들어오기만 할 뿐 다른 마디로 나가질 못합니다. 이 문제를 해결하기 위해 각 마디에 존재하는 개미의 <span class="math inline">\(c=0.85\)</span>, 85% 만큼만 남겨두고 <span class="math inline">\((1 - c)\)</span>, 15% 는 임의의 노드로 보냅니다. 모든 마디에서 15% 의 개미가 다른 마디로 나뉘어서 보내지기 때문에 각 마디는 <span class="math inline">\(\frac{1 - c}{N}\)</span> 의 개미가 새로 유입되는 효과가 있습니다. <span class="math inline">\(\frac{1 - c}{N}\)</span> 은 dangling nodes 에 의하여 cyclic graph 가 만들어지지 않는 문제를 해결하기 위한 방법입니다. Random jump 를 통하여 모든 마디는 연결이 되며, cyclic network 가 됩니다.</p>
+<div id="cell-19" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _normalize(G):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    W_sum <span class="op">=</span> {}    </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t, f_dict <span class="kw">in</span> G.items():</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> f, w <span class="kw">in</span> f_dict.items():</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>            W_sum[f] <span class="op">=</span> W_sum.get(f, <span class="dv">0</span>) <span class="op">+</span> w</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> {t:{f:w<span class="op">/</span>W_sum[f] <span class="cf">for</span> f,w <span class="kw">in</span> f_dict.items()} <span class="cf">for</span> t, f_dict <span class="kw">in</span> G.items()}    </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    nodes <span class="op">=</span> <span class="bu">set</span>(G.keys())</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    nodes.update(W_sum)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> A, nodes</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pagerank(G, bias<span class="op">=</span><span class="va">None</span>, df<span class="op">=</span><span class="fl">0.15</span>, max_iter<span class="op">=</span><span class="dv">50</span>, converge_error<span class="op">=</span><span class="fl">0.001</span>, verbose<span class="op">=</span><span class="dv">0</span>):   </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    A, nodes <span class="op">=</span> _normalize(G)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    N <span class="op">=</span> <span class="bu">len</span>(nodes) <span class="co"># number of nodes</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    sr <span class="op">=</span> <span class="dv">1</span> <span class="op">-</span> df <span class="co"># survival rate (1 - damping factor)</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    ir <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> N <span class="co"># initial rank</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialization</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    rank <span class="op">=</span> {n:ir <span class="cf">for</span> n <span class="kw">in</span> nodes}</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialization of bias</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> bias:</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        bias <span class="op">=</span> {node:ir <span class="cf">for</span> node <span class="kw">in</span> nodes}</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iteration</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _iter <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, max_iter <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        rank_new <span class="op">=</span> {}</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># t: to node, f: from node, w: weight</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> t <span class="kw">in</span> nodes:</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>            f_dict <span class="op">=</span> A.get(t, {})</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>            rank_t <span class="op">=</span> <span class="bu">sum</span>((w<span class="op">*</span>rank[f] <span class="cf">for</span> f, w <span class="kw">in</span> f_dict.items())) <span class="cf">if</span> f_dict <span class="cf">else</span> <span class="dv">0</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>            rank_t <span class="op">=</span> sr <span class="op">*</span> rank_t <span class="op">+</span> df <span class="op">*</span> bias.get(t, <span class="dv">0</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>            rank_new[t] <span class="op">=</span> rank_t</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># convergence check</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>        diff <span class="op">=</span> <span class="bu">sum</span>((<span class="bu">abs</span>(rank[n] <span class="op">-</span> rank_new[n]) <span class="cf">for</span> n <span class="kw">in</span> nodes))</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> diff <span class="op">&lt;</span> converge_error:</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> verbose:</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>                <span class="bu">print</span>(<span class="st">'Early stopped at iter = </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(_iter))</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> verbose:</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>            sum_ <span class="op">=</span> <span class="bu">sum</span>(rank_new.values())</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">'Iteration = </span><span class="sc">{}</span><span class="st">, diff = </span><span class="sc">{}</span><span class="st">, sum = </span><span class="sc">{}</span><span class="st">'</span>.<span class="bu">format</span>(_iter, diff, sum_))</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>        rank <span class="op">=</span> rank_new</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> rank</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-20" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pickle</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data/movie-actor/casting_graph.pkl'</span>, <span class="st">'rb'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    graph <span class="op">=</span> pickle.load(f)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># casting weight of movie = 10001 = 시네마천국</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># pprint(sorted(graph['10001'].items(), key=lambda x:-x[1]))</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data/movie-actor/actors.csv'</span>, encoding<span class="op">=</span><span class="st">'utf-8'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">next</span>(f)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    docs <span class="op">=</span> [line[:<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'</span><span class="ch">\t</span><span class="st">'</span>) <span class="cf">for</span> line <span class="kw">in</span> f]</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    _idx2actor <span class="op">=</span> {doc[<span class="dv">0</span>]:(doc[<span class="dv">2</span>] <span class="cf">if</span> doc[<span class="dv">2</span>] <span class="cf">else</span> doc[<span class="dv">1</span>]) <span class="cf">for</span> doc <span class="kw">in</span> docs}</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>idx2actor <span class="op">=</span> <span class="kw">lambda</span> idx: _idx2actor.get(idx, <span class="st">'Unknown'</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"># pprint(idx2actor('4374'))</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># create idx to movie name function</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> append_year_countries(year, countries):</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> year <span class="kw">and</span> countries:</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f' (</span><span class="sc">{</span>year<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>countries<span class="sc">}</span><span class="ss">)'</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> year:</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f' (</span><span class="sc">{</span>year<span class="sc">}</span><span class="ss">)'</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> countries:</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="ss">f' (</span><span class="sc">{</span>countries<span class="sc">}</span><span class="ss">)'</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">''</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data/movie-actor/movies.csv'</span>, encoding<span class="op">=</span><span class="st">'utf-8'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">next</span>(f)</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    docs <span class="op">=</span> [line[:<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'</span><span class="ch">\t</span><span class="st">'</span>) <span class="cf">for</span> line <span class="kw">in</span> f]</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    _idx2movie <span class="op">=</span> {doc[<span class="dv">0</span>]:<span class="st">'</span><span class="sc">{}{}</span><span class="st">'</span>.<span class="bu">format</span>(doc[<span class="dv">1</span>], append_year_countries(doc[<span class="dv">4</span>], doc[<span class="dv">5</span>])) <span class="cf">for</span> doc <span class="kw">in</span> docs <span class="cf">if</span> <span class="bu">len</span>(docs)}</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    _idx2year <span class="op">=</span> {doc[<span class="dv">0</span>]:(<span class="bu">int</span>(doc[<span class="dv">4</span>]) <span class="cf">if</span> doc[<span class="dv">4</span>] <span class="cf">else</span> <span class="dv">0</span>) <span class="cf">for</span> doc <span class="kw">in</span> docs <span class="cf">if</span> <span class="bu">len</span>(docs)}</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>idx2movie <span class="op">=</span> <span class="kw">lambda</span> idx: _idx2movie.get(idx, <span class="st">'Unknown'</span>)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>idx2year <span class="op">=</span> <span class="kw">lambda</span> idx: _idx2year.get(idx, <span class="dv">0</span>)</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="co"># pprint(idx2movie('10001'))</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="co"># pprint(idx2year('10001'))</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'data/movie-actor/num_comments.txt'</span>, encoding<span class="op">=</span><span class="st">'utf-8'</span>) <span class="im">as</span> f:</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    docs <span class="op">=</span> [line[:<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'</span><span class="ch">\t</span><span class="st">'</span>) <span class="cf">for</span> line <span class="kw">in</span> f]</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    _idx2numcomments <span class="op">=</span> {movie_idx:<span class="bu">int</span>(num) <span class="cf">for</span> movie_idx, num <span class="kw">in</span> docs}</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>idx2numcomments <span class="op">=</span> <span class="kw">lambda</span> idx: _idx2numcomments.get(idx,<span class="dv">0</span>)</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="co"># pprint(idx2numcomments('10001'))</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(idx2movie(<span class="st">'134963'</span>), end<span class="op">=</span><span class="st">'</span><span class="ch">\n\n</span><span class="st">'</span>)</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> actor, weight <span class="kw">in</span> <span class="bu">sorted</span>(graph[<span class="st">'134963'</span>].items(), key<span class="op">=</span><span class="kw">lambda</span> x:<span class="op">-</span>x[<span class="dv">1</span>]):</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>idx2actor(actor)<span class="sc">}</span><span class="ss"> : </span><span class="sc">{</span>weight<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="co"># bi-directed graph</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="co"># graph has only one-way link: movie -&gt; actor</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>actor_weight_sum <span class="op">=</span> {}</span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="co"># cumulate actor weights</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> movie, actors <span class="kw">in</span> graph.items():</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> actor, weight <span class="kw">in</span> actors.items():</span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>        actor_weight_sum[actor] <span class="op">=</span> actor_weight_sum.get(actor, <span class="dv">0</span>) <span class="op">+</span> weight</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-21" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make bi-directed graph</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> collections <span class="im">import</span> defaultdict</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> defaultdict(<span class="kw">lambda</span>: {})</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> movie, actors <span class="kw">in</span> graph.items():</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    g[<span class="ss">f'movie </span><span class="sc">{</span>movie<span class="sc">}</span><span class="ss">'</span>] <span class="op">=</span> {<span class="ss">f'actor </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">'</span>:w <span class="cf">for</span> a,w <span class="kw">in</span> actors.items()}</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> actor, weight <span class="kw">in</span> actors.items():</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        g[<span class="ss">f'actor </span><span class="sc">{</span>actor<span class="sc">}</span><span class="ss">'</span>][<span class="ss">f'movie </span><span class="sc">{</span>movie<span class="sc">}</span><span class="ss">'</span>] <span class="op">=</span> weight <span class="op">/</span> actor_weight_sum[actor]</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> <span class="bu">dict</span>(g)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>g[<span class="st">'movie 134963'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-22" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> movie <span class="kw">in</span> g[<span class="st">'actor 5751'</span>]:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    movie_idx <span class="op">=</span> movie.split()[<span class="dv">1</span>]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(idx2movie(movie_idx))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-23" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>rank <span class="op">=</span> pagerank(g,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                bias<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                df<span class="op">=</span><span class="fl">0.15</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                max_iter<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                converge_error<span class="op">=</span><span class="fl">0.0001</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                verbose<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-24" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>movie_rank <span class="op">=</span> {node:rank <span class="cf">for</span> node, rank <span class="kw">in</span> rank.items() <span class="cf">if</span> node[<span class="dv">0</span>] <span class="op">==</span> <span class="st">'m'</span>}</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>actor_rank <span class="op">=</span> {node:rank <span class="cf">for</span> node, rank <span class="kw">in</span> rank.items() <span class="cf">if</span> node[<span class="dv">0</span>] <span class="op">==</span> <span class="st">'a'</span>}</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>pprint(<span class="bu">list</span>(movie_rank)[:<span class="dv">10</span>])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>pprint(<span class="bu">list</span>(actor_rank)[:<span class="dv">10</span>])</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># top rank movie</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># filtering Korean movie</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>korean_movies <span class="op">=</span> {movie:weight <span class="cf">for</span> movie, weight <span class="kw">in</span> movie_rank.items() <span class="cf">if</span> <span class="st">'한국)'</span> <span class="kw">in</span> idx2movie(movie.split()[<span class="dv">1</span>])}</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> movie, _ <span class="kw">in</span> <span class="bu">sorted</span>(korean_movies.items(), key<span class="op">=</span><span class="kw">lambda</span> x:<span class="op">-</span>x[<span class="dv">1</span>])[:<span class="dv">100</span>]:</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    movie_idx <span class="op">=</span> movie.split()[<span class="dv">1</span>]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(idx2movie(movie_idx))</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co"># english_movies = {movie:weight for movie, weight in movie_rank.items() if '미국)' in idx2movie(movie.split()[1])}</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># for movie, _ in sorted(english_movies.items(), key=lambda x:-x[1])[:100]:</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     movie_idx = movie.split()[1]</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">#     print(idx2movie(movie_idx))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-25" class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># top actor</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> actor, _ <span class="kw">in</span> <span class="bu">sorted</span>(actor_rank.items(), key<span class="op">=</span><span class="kw">lambda</span> x:<span class="op">-</span>x[<span class="dv">1</span>])[:<span class="dv">100</span>]:</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    actor_idx <span class="op">=</span> actor.split()[<span class="dv">1</span>]</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(idx2actor(actor_idx), end<span class="op">=</span><span class="st">' '</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-27" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.sparse <span class="im">import</span> csc_matrix</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># node index</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>nodes <span class="op">=</span> <span class="bu">set</span>(g.keys())</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>idx2node <span class="op">=</span> <span class="bu">list</span>(<span class="bu">sorted</span>(nodes))</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>node2idx <span class="op">=</span> {node:idx <span class="cf">for</span> idx, node <span class="kw">in</span> <span class="bu">enumerate</span>(idx2node)}</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># bias</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>bias <span class="op">=</span> {node:(idx2numcomments(node.split()[<span class="dv">1</span>]) <span class="cf">if</span> node[<span class="dv">0</span>] <span class="op">==</span> <span class="st">'m'</span> <span class="cf">else</span> <span class="dv">0</span>) <span class="cf">for</span> node <span class="kw">in</span> g}</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>_sum <span class="op">=</span> <span class="bu">sum</span>(bias.values())</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>bias <span class="op">=</span> {node:b <span class="op">/</span> _sum <span class="cf">for</span> node, b <span class="kw">in</span> bias.items()}</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>bias <span class="op">=</span> np.asarray([b <span class="cf">for</span> node, b <span class="kw">in</span> <span class="bu">sorted</span>(bias.items(), key<span class="op">=</span><span class="kw">lambda</span> tp:node2idx[tp[<span class="dv">0</span>]])])</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bias.shape)</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="co"># transform g to sparse matrix</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> []</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> []</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> from_node, to_dict <span class="kw">in</span> g.items():</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    from_idx <span class="op">=</span> node2idx[from_node]</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> to_node, weight <span class="kw">in</span> to_dict.items():</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>        to_idx <span class="op">=</span> node2idx[to_node]</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        rows.append(from_idx)</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        cols.append(to_idx)</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>        data.append(weight)</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> csc_matrix((data, (rows, cols)))</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(A.shape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-28" class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> normalize</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>max_iter <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> <span class="fl">0.85</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>ir <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> A.shape[<span class="dv">0</span>]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>rank <span class="op">=</span> np.asarray([ir] <span class="op">*</span> A.shape[<span class="dv">0</span>])</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n_iter <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, max_iter <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    rank_new <span class="op">=</span> A.dot(rank) <span class="co"># call scipy.sparse safe_sparse_dot()</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    rank_new <span class="op">=</span> normalize(rank_new.reshape(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>), norm<span class="op">=</span><span class="st">'l1'</span>).reshape(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    rank_new <span class="op">=</span> df <span class="op">*</span> rank_new <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> df) <span class="op">*</span> bias    </span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    diff <span class="op">=</span> <span class="bu">abs</span>(rank <span class="op">-</span> rank_new).<span class="bu">sum</span>()</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    rank <span class="op">=</span> rank_new</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'iter </span><span class="sc">{</span>n_iter<span class="sc">}</span><span class="ss"> : diff = </span><span class="sc">{</span>diff<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-29" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>rank_ <span class="op">=</span> {idx2node[idx]:value <span class="cf">for</span> idx, value <span class="kw">in</span> <span class="bu">enumerate</span>(rank)}</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>movierank <span class="op">=</span> {node:value <span class="cf">for</span> node, value <span class="kw">in</span> rank_.items() <span class="cf">if</span> <span class="st">'movie'</span> <span class="kw">in</span> node}</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>actorrank <span class="op">=</span> {node:value <span class="cf">for</span> node, value <span class="kw">in</span> rank_.items() <span class="cf">if</span> <span class="st">'actor'</span> <span class="kw">in</span> node}</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> movie, value <span class="kw">in</span> <span class="bu">sorted</span>(movierank.items(), key<span class="op">=</span><span class="kw">lambda</span> x:<span class="op">-</span>x[<span class="dv">1</span>])[:<span class="dv">50</span>]:</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    movie_idx <span class="op">=</span> movie.split()[<span class="dv">1</span>]</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(idx2movie(movie_idx))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./ds-camp07.html" class="pagination-link" aria-label="Python 문법 연습 심화(토이 프로그램)">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Python 문법 연습 심화(토이 프로그램)</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./ds-camp09(a).html" class="pagination-link" aria-label="사교육비 증가에 따른 상관관계 파악">
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">사교육비 증가에 따른 상관관계 파악</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

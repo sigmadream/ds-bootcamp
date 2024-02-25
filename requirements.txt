@@ -1,0 +1,13 @@
+scikit-learn
+pandas
+seaborn
+jupyterlab
+notebook
+koreanize_matplotlib
+pyreadstat
+openpyxl
+pyarrow
+plotly
+selenium
+prophet
+networkx

@@ -1,0 +1,38 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "DS Bootcamp 2024"
+  author: "한상곤(sangkon@pusan.ac.kr)"
+  date: "2/05/2024"
+  chapters:
+    - index.qmd
+    - ds-camp01.ipynb
+    - ds-camp02.ipynb
+    - ds-camp03.ipynb
+    - ds-camp04.ipynb
+    - ds-camp05.ipynb
+    - ds-camp06.ipynb
+    - ds-camp07.ipynb
+    - ds-camp08.ipynb
+    - ds-camp09(a).ipynb
+    - ds-camp09(b).ipynb
+    - ds-camp10.ipynb
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  # pdf:
+  #   documentclass: scrreprt
+  #   papersize: a4
+  #   toc: true
+  #   toc-depth: 2
+  #   number-sections: true
+  #   colorlinks: true
+  #   include-in-header: 
+  #     text: |
+  #       \usepackage{kotex} 

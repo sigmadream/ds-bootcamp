@@ -1,0 +1,17 @@
+---
+title: "DS Bootcamp 2024, 파이썬 특강"
+---
+
+## 소개
+
+PNU의 2024년 겨울방학에 진행된 DS Bootcamp에 사용된 실습 내용 입니다. 데이터 관련 대학원 석사 연구생분들이 향후 자신의 연구를 위해서 필요한 연구 역량 강화를 목적으로 진행된 과정입니다.
+
+## 강의자료
+
+- [강의계획서](https://docs.google.com/document/d/1kfRS_1EYa5sC_oJoAkOAsztQuDyFdnrX2KTsck-oeZU/edit?usp=sharing)
+
+## Ref.
+
+- [The Python Tutorial](https://docs.python.org/3/tutorial/index.html)
+- [Streamlit](https://streamlit.io/)
+- [Gradio](https://www.gradio.app/)
